@@ -8,7 +8,7 @@ load doa doa
 load dod
 strSave=mfilename('fullpath')
 op=1;
-ed=2;
+ed=20;
 %%
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degreeBButterLover
@@ -40,8 +40,8 @@ elem_rx=prod(array_rx);
 dir_tx=[dod_phi dod_theta];
 dir_rx=[doa_phi doa_theta];
 hf=zeros(Nf,elem_tx*elem_rx,rxN); % TF of tx with one subarray 32x2
-phi=linspace(-180, 180, 180);
-theta=linspace(0, 180, 90);
+phi=linspace(-180, 180, 90);
+theta=linspace(0, 180, 45);
 [ phi2, theta2]=meshgrid(phi, theta);
 dirs_t=[phi2(:), theta2(:)];
 clear dod dod_phi dod_theta doa doa_phi doa_theta phi phi2 theta theta2 phase prx
@@ -67,8 +67,8 @@ for w=1:rxN
     
     % Steering phase shift
     as_rx=findStr( array_rx, hf_rx, dirs_t, fc, Nb_rx ); % 4x2 Four beams of 2 ant elements
-%     wf=norm( as_rx( 1, :), 'fro');
-%     as_rx=as_rx./wf;    % Normalization
+    wf=norm( as_rx( 1, :), 'fro');
+    as_rx=as_rx./wf;    % Normalization
     
     % Applying steering vector
     hf_s=times3d(as_rx, hf_t);  % 4x32x801
