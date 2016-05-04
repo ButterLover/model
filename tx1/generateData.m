@@ -44,7 +44,7 @@ phi=doa(:,1,:)+135;
 phi(phi>180)=mod(phi(phi>180),-180);
 phi(phi<-180)=mod(phi(phi<-180),180);
 doa3(:,1,:)=phi;
-% Tx rotation
+% Tx rotation, parallel with street
 phi=dod(:,1,:)+45;
 phi(phi>180)=mod(phi(phi>180),-180);
 phi(phi<-180)=mod(phi(phi<-180),180);
@@ -70,7 +70,7 @@ dis=sqrt(abs(x-tx(1)).^2+abs(y-tx(2)).^2+abs(z-tx(3)).^2);
 
 %% Adding patch antenna pattern
 load patchPattern
-% Rotation for tx side
+% Adding ant pattern at tx side
 theta_tx=round(dod(:,2,:)/2); % Theta for tx side
 theta_tx(theta_tx==0)=1;
 phi_tx=round(dod(:,1,:)/2)+90;
@@ -78,6 +78,7 @@ phi_tx(phi_tx==0)=1;
 ind_tx=sub2ind(size(patch),theta_tx, phi_tx);
 al_lin=db2mag(al).*exp(1j*2*pi*degtorad(phase)).*patch(ind_tx);
 
+% Adding patch pattern at rx side
 theta_rx=round(doa(:,2,:)/2); % Theta is all the same for any rotation
 theta_rx(theta_rx==0)=1;  % Rx side
 % Plane wave without rotation
