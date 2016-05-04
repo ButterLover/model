@@ -5,20 +5,30 @@ clc;clear all; close all;
 tic
 % generateData;
 op=1;
-ed=58;
+ed=132;
 load rayAm
 load doa
 load dod
 doa0=doa;
 al0=al;
-%% =============================  BF Model  ==============================|
+%% =============================  SM Model  ==============================|
 % x-----------------------------------------------------------------------x
 % x----------------------Antenna element pattern iso ---------------------x
 % x-----------------------------------------------------------------------x
 al=al0; % Isotropic antenna plane wave are the same for all rotation
 % rotation 0
 doa=doa0;
-bfModel( los, al, doa, dod, phase, toa, '\iso\r0' );
+hf=smModel( op, ed, al, doa, dod, phase, toa, '\iso\r0' );
+% %% =============================  BF Model  ==============================|
+% x-----------------------------------------------------------------------x
+% x----------------------Antenna element pattern iso ---------------------x
+% x-----------------------------------------------------------------------x
+% al=al0; % Isotropic antenna plane wave are the same for all rotation
+% % rotation 0
+% doa=doa0;
+bfModel( hf, '\iso\r0' );
+bfEigModel( hf, '\iso\r0' );
+%%
 % % rotation 45
 % doa=doa1;
 % bfModel( los, al, doa, dod, phase, toa, '\iso\r45' );

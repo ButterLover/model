@@ -1,15 +1,11 @@
+function [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir )
+%SMMODEL Summary of this function goes here
+%   Detailed explanation goes here
 % Calculating Spatial multiplexing capacity outdoor 15 GHz Tx1
 % This file should be run under the files directions
 % MIMO case: tx - 8x4  rx - 1x8
-clc;clear all; close all;
-tic
-load rayAm
-load doa doa
-load dod
-strSave=mfilename('fullpath')
-op=1;
-ed=20;
 %%
+strSave=strcat(mfilename('fullpath'), dir)
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degree
 doa_theta=doa(:,2,op:ed); % degree
@@ -55,7 +51,7 @@ parfor w=1:rxN
     % Calculating transfer function from plane wave
     hf(:,:,w)=pw2hf(am, toa(:,:,w), fc, bw, Nf);
 end
-% save hf hf
+save hfsm hf
 %% Capacity averaging on all frequency bins
 clear a* d* rx tx phase prx toa f
 snr=db2pow(Ptx)/(No*B);
@@ -93,8 +89,11 @@ rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=rxP(:);
 
 %% Save data
-% save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
-% save( strcat(strSave,'/channelMatrix'), 'hf');
-% save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
-% save( strcat(strSave,'/capacity'), 'cp');
+save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
+save( strcat(strSave,'/channelMatrix'), 'hf');
+save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
+save( strcat(strSave,'/capacity'), 'cp');
 toc
+
+end
+

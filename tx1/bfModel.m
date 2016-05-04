@@ -1,10 +1,15 @@
-% Calculating Beamforming capacity outdoor 15 GHz Tx1
-% This file should be run under the files directions
-% MIMO case: tx - 8x4  rx - 1x8
-clear all; close all;
-tic
-load hf
+function [ cpbf ] = bfModel( hf, dir )
+%BFMODEL [ cpbf ] = bfModel( hf, dir )
+%  
+% 
+% 
+% 
+% 
+% 
+% 
+% 
 %%
+strSave=strcat(mfilename('fullpath'), dir)
 % Initialization parameters
 [Nf, ~, rxN]=size(hf);
 Hf=permute(hf, [2 1 3]);
@@ -59,12 +64,14 @@ clear ant* tx rx am a* toa tau dir* do* N* phase prx f
 clear lambda
 
 %% Capacity of estimating directional beamforming
-cpbf=cp_t(:);
-save cpbf cpbf
-%% Capacity method 3 classic shannon
-% Hf=sum(abs(hf).^2, 2);
-% cpbf=mean(log2(1+snr*Hf));
-% cpbf=cpbf(:);
+cp=cp_t(:);
+cpbf=cp;
 % save cpbf cpbf
-% save hf hf
+%% Save data
+% save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
+% save( strcat(strSave,'/channelMatrix'), 'hf');
+% save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
+save( strcat(strSave,'/capacity'), 'cp');
 toc
+end
+
