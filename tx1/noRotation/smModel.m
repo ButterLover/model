@@ -17,7 +17,7 @@ dod_phi=dod(:,1,op:ed); % degree
 dod_theta=dod(:,2,op:ed); % degree
 phase=phase(:,:,op:ed);
 al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
-% al_lin(10:end,:,:)=0;
+al_lin(2:end,:,:)=0;
 % Initialized parameters
 fc=15e9;
 bw=1e9; % System bandwidth
