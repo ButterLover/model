@@ -4,7 +4,7 @@ function [ outdata ] = findStr( array, hf, dir, fc, Nb)
 %
 %   Input:
 %   array - antenna allocation
-%   hf - channel transfer function e.g. 801x32
+%   hf - channel transfer function e.g. 32x801
 %   al - Complex Impulse response with array pattern( rays x Tx number )
 %   dir - steering direction in degree [phi theta]
 %   fc - carrier frequence for calculating spacing
@@ -42,12 +42,14 @@ ft=bw/(Nf-1);   % Frequency spacing between two bins
 f=fc-bw/2:ft:fc+bw/2;   % Frequency range
 tau=0:1/bw:1/ft;    % Calculating delay
 ht=ifft(hf);    % 801x32
+% size(hf)
 pdp=squeeze(sum(abs(ht).^2,2)); % 801x1
 [~, ind_mx]=max(pdp(:)); % 801x1
 tau_p=tau(ind_mx);
 
 % Steering vector
 bn=exp(-1j*2*pi*dx*(sin(theta).*cos(phi))/lambda).*exp(-1j*2*pi*dy*(sin(theta).*sin(phi))/lambda).*exp(-1j*2*pi*dz*cos(theta)/lambda);
+% size(bn)
 % Find the largest received power, hf 801x32, bn 32x16500
 wf=norm(bn, 'fro');
 alste=abs(exp(-1j*2*pi.*f(:).*tau_p(:)).'*(hf*bn./wf)); % 1x801 801x32 32x16500 = 1x16500
