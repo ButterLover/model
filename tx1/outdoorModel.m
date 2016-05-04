@@ -4,7 +4,8 @@
 clc;clear all; close all;
 tic
 % generateData;
-los=132;
+op=1;
+ed=58;
 load rayAm
 load doa
 load dod

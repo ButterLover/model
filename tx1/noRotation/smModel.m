@@ -8,7 +8,7 @@ load doa doa
 load dod
 strSave=mfilename('fullpath')
 op=1;
-ed=20;
+ed=2;
 %%
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degree
@@ -23,7 +23,7 @@ fc=15e9;
 bw=1e9; % System bandwidth
 Nf=801;
 ft=bw/(Nf-1);   % Frequency spacing between two bins
-f=fc-bw/2:ft:fc+bw/2;   % Frequency range
+% f=fc-bw/2:ft:fc+bw/2;   % Frequency range
 tau=0:1/bw:1/ft;    % Calculating delay
 [rayN, ~, rxN]=size(prx);
 B=bw/(Nf-1);    % Frequency bins bandwidth
@@ -55,9 +55,9 @@ for w=1:rxN
     % Calculating transfer function from plane wave
     hf(:,:,w)=pw2hf(am, toa(:,:,w), fc, bw, Nf);
 end
-save hf hf
+% save hf hf
 %% Capacity averaging on all frequency bins
-clear a* d* rx tx phase prx tau toa f
+clear a* d* rx tx phase prx toa f
 snr=db2pow(Ptx)/(No*B);
 Hf=permute(hf, [2 1 3]);
 Hf=reshape(Hf, elem_rx, elem_tx, Nf, []);
@@ -74,20 +74,20 @@ for w=1:rxN
     cp(w)=mean(cp_t);
 end
 cpsm=cp(:);
-save cpsm cpsm
+% save cpsm cpsm
 % %--------------------------------------
-% %% RMS delay
-% ht=ifft(hf);
-% pdp=squeeze(sum(abs(ht).^2,2));
-% % Time-intergrated power
-% pm=sum(pdp,1);
-% % Mean delay
-% tm=sum(bsxfun(@times, pdp, tau.'),1);
-% % Rms delay spread
-% tau2=tau(:).^2;
-% st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
-% st=st(:);
-% rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+%% RMS delay
+ht=ifft(hf);
+pdp=squeeze(sum(abs(ht).^2,2));
+% Time-intergrated power
+pm=sum(pdp,1);
+% Mean delay
+tm=sum(bsxfun(@times, pdp, tau.'),1);
+% Rms delay spread
+tau2=tau(:).^2;
+st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
+st=st(:);
+rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 
 %% Save data
 % save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
