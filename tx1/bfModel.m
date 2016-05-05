@@ -1,4 +1,4 @@
-function [ cpbf ] = bfModel( hf, dir )
+function [ cpbf ] = bfModel( Hf, dir )
 %BFMODEL [ cpbf ] = bfModel( hf, dir )
 %  
 %  Directional beamforming
@@ -15,8 +15,8 @@ function [ cpbf ] = bfModel( hf, dir )
 %%
 strSave=strcat(mfilename('fullpath'), dir)
 % Initialization parameters
-[Nf, ~, rxN]=size(hf);
-Hf=permute(hf, [2 1 3]);
+[Nf, ~, rxN]=size(Hf);
+Hf=permute(Hf, [2 1 3]);
 fc=15e9;
 bw=1e9; % System bandwidth
 ft=bw/(Nf-1);   % Frequency spacing between two bins
@@ -30,6 +30,7 @@ phi=linspace(-180, 180, 180);
 theta=linspace(0, 180, 90);
 [ dod_phi, dod_theta]=meshgrid(phi, theta);
 dirs_t=[dod_phi(:), dod_theta(:)];
+clear dod_phi dod_theta phi theta
 
 B=bw/(Nf-1);    % Frequency bins bandwidth
 Ptx=-30;    % Transmitting power 0dBm=-30dBw
@@ -65,21 +66,26 @@ parfor w=1:rxN
     % Calculating capacity
     cp_t(w)=mean( log2(1+snr.*wb.^2)); % 801x1 = 1x1
 end
-clear ant* tx rx am a* toa dir* do* phase prx f
-clear lambda
-
+clear Hf
 %% Capacity of estimating directional beamforming
 cp=cp_t(:);
 cpbf=cp;
-%% RMS delay
+%% Save channel matrix and capacity
 hfbf=reshape(hfbf, Nf, 1, []);
 if rxN>735
-    hfbf_los=hfbf(:,1:132);
+    hfbf_los=hfbf(:,:,1:132);
     hfbf_nlos1=hfbf(:,:,133:433);
     hfbf_nlos2=hfbf(:,:,434:734);
     hfbf_nlos3=hfbf(:,:,735:end);
 end
+if rxN>735
+    save( strcat(strSave,'/channelMatrix'), 'hfbf_los', 'hfbf_nlos1', 'hfbf_nlos2', 'hfbf_nlos3');
+end
+save( strcat(strSave,'/capacity'), 'cp');
+clear hfbf_los hfbf_nlos* cp cp_t
+%% RMS delay
 ht=ifft(hfbf);
+clear hfbf
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
 pm=sum(pdp,1);
@@ -92,12 +98,9 @@ st=st(:);
 rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=rxP(:);
 %% Save data
-if rxN>735
-save( strcat(strSave,'/channelMatrix'), 'hfbf_los', 'hfbf_nlos1', 'hfbf_nlos2', 'hfbf_nlos3');
-end
 save( strcat(strSave,'/rmsDelay'), 'st');
 save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
-save( strcat(strSave,'/capacity'), 'cp');
+
 toc
 end
 
