@@ -1,13 +1,17 @@
 function [ cpbf ] = bfModel( hf, dir )
 %BFMODEL [ cpbf ] = bfModel( hf, dir )
 %  
+%  Directional beamforming
+% 
+%  Input: 
+%  hf - channel transfer function with antenna array phase shift applied
+%  dir - data saving directory
 % 
 % 
+%  Output:
+%  cpbf - capacity of beamforming
 % 
-% 
-% 
-% 
-% 
+
 %%
 strSave=strcat(mfilename('fullpath'), dir)
 % Initialization parameters
@@ -56,21 +60,43 @@ parfor w=1:rxN
     [~, ind_mx]=max(pdp(:)); % 801x1
     tau_p=tau(ind_mx);
     
+    hfbf(:,w)=Hf(:,:,w).'*ant./wf;
     wb=abs( Hf(:,:,w).'*ant./wf.*(exp(-1j*2*pi.*fk(:).*tau_p))); % 801x256 256x1 = 801x1 .* 801x1
     % Calculating capacity
     cp_t(w)=mean( log2(1+snr.*wb.^2)); % 801x1 = 1x1
 end
-clear ant* tx rx am a* toa tau dir* do* N* phase prx f
+clear ant* tx rx am a* toa dir* do* phase prx f
 clear lambda
 
 %% Capacity of estimating directional beamforming
 cp=cp_t(:);
 cpbf=cp;
-% save cpbf cpbf
+%% RMS delay
+hfbf=reshape(hfbf, Nf, 1, []);
+if rxN>735
+    hfbf_los=hfbf(:,1:132);
+    hfbf_nlos1=hfbf(:,:,133:433);
+    hfbf_nlos2=hfbf(:,:,434:734);
+    hfbf_nlos3=hfbf(:,:,735:end);
+end
+ht=ifft(hfbf);
+pdp=squeeze(sum(abs(ht).^2,2));
+% Time-intergrated power
+pm=sum(pdp,1);
+% Mean delay
+tm=sum(bsxfun(@times, pdp, tau.'),1);
+% Rms delay spread
+tau2=tau(:).^2;
+st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
+st=st(:);
+rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+rxP=rxP(:);
 %% Save data
-% save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
-% save( strcat(strSave,'/channelMatrix'), 'hf');
-% save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
+if rxN>735
+save( strcat(strSave,'/channelMatrix'), 'hfbf_los', 'hfbf_nlos1', 'hfbf_nlos2', 'hfbf_nlos3');
+end
+save( strcat(strSave,'/rmsDelay'), 'st');
+save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
 save( strcat(strSave,'/capacity'), 'cp');
 toc
 end
