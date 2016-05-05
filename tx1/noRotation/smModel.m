@@ -3,12 +3,15 @@
 % MIMO case: tx - 8x4  rx - 1x8
 clc;clear all; close all;
 tic
-load rayAm
-load doa doa
+load rayAm al_pat2 phase toa
+load doa doa2
 load dod
 strSave=mfilename('fullpath')
 op=1;
-ed=20;
+ed=2;
+% al0=al;
+al=al_pat2;
+doa=doa2;
 %%
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degree
@@ -17,6 +20,8 @@ dod_phi=dod(:,1,op:ed); % degree
 dod_theta=dod(:,2,op:ed); % degree
 phase=phase(:,:,op:ed);
 al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
+clear al al_p* doa doa2 dod phase
+%%
 % al_lin(2:end,:,:)=0;
 % Initialized parameters
 fc=15e9;
@@ -39,9 +44,9 @@ elem_tx=prod(array_tx);
 elem_rx=prod(array_rx);
 dir_tx=[dod_phi dod_theta];
 dir_rx=[doa_phi doa_theta];
+clear doa* dod*
 hf=zeros(Nf,elem_tx*elem_rx,rxN);
 parfor w=1:rxN
-%     w
     % Phase shift of antenna array
     ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false); % 200x32
     ant_tx=reshape(ant_tx.', 1, elem_tx, rayN); % 1x32x200
@@ -55,9 +60,9 @@ parfor w=1:rxN
     % Calculating transfer function from plane wave
     hf(:,:,w)=pw2hf(am, toa(:,:,w), fc, bw, Nf);
 end
+clear toa
 % save hf hf
 %% Capacity averaging on all frequency bins
-clear a* d* rx tx phase prx toa f
 snr=db2pow(Ptx)/(No*B);
 Hf=permute(hf, [2 1 3]);
 Hf=reshape(Hf, elem_rx, elem_tx, Nf, []);
@@ -79,6 +84,12 @@ cpsm=cp(:);
 % save cpsm cpsm
 % %--------------------------------------
 %% RMS delay
+if rxN>735
+    hf_los=hf(:,:,1:132);
+    hf_nlos1=hf(:,:,133:433);
+    hf_nlos2=hf(:,:,434:734);
+    hf_nlos3=hf(:,:,735:end);
+end
 ht=ifft(hf);
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
@@ -93,8 +104,10 @@ rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=rxP(:);
 
 %% Save data
+% if rxN>735
+%     save( strcat(strSave,'/channelMatrix'), 'hf_los', 'hf_nlos1', 'hf_nlos2', 'hf_nlos3');
+% end
 % save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
-% save( strcat(strSave,'/channelMatrix'), 'hf');
 % save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
 % save( strcat(strSave,'/capacity'), 'cp');
 toc
