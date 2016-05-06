@@ -62,14 +62,19 @@ clear lambda
 %% Capacity of estimating directional beamforming
 cpbf=cp_t(:);
 save cpbf cpbf
-%% RMS delay
+%% Save channel matrix and capacity
 hfbf=reshape(hfbf, Nf, 1, []);
 if rxN>735
-    hfbf_los=hfbf(:,1:132);
+    hfbf_los=hfbf(:,:,1:132);
     hfbf_nlos1=hfbf(:,:,133:433);
     hfbf_nlos2=hfbf(:,:,434:734);
     hfbf_nlos3=hfbf(:,:,735:end);
 end
+% if rxN>735
+%     save( strcat(strSave,'/channelMatrix'), 'hfbf_los', 'hfbf_nlos1', 'hfbf_nlos2', 'hfbf_nlos3');
+% end
+% save( strcat(strSave,'/capacity'), 'cp');
+%% RMS delay
 ht=ifft(hfbf);
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
@@ -82,11 +87,7 @@ st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
 rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=rxP(:);
-% %% Save data
-% if rxN>735
-%     save( strcat(strSave,'/channelMatrix'), 'hfbf_los', 'hfbf_nlos1', 'hfbf_nlos2', 'hfbf_nlos3');
-% end
+%% Save data
 % save( strcat(strSave,'/rmsDelay'), 'st');
 % save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
-% save( strcat(strSave,'/capacity'), 'cp');
 toc

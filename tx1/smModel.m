@@ -19,6 +19,9 @@ function [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir )
 %
 %%
 strSave=strcat(mfilename('fullpath'), dir)
+if exist(strSave, 'dir')~=7
+    mkdir(strSave);
+end
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degree
 doa_theta=doa(:,2,op:ed); % degree
@@ -28,7 +31,6 @@ phase=phase(:,:,op:ed);
 al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
 clear al al_p* doa doa2 dod phase
 %%
-% al_lin(2:end,:,:)=0;
 % Initialized parameters
 fc=15e9;
 bw=1e9; % System bandwidth
@@ -54,9 +56,9 @@ clear doa* dod*
 hf=zeros(Nf,elem_tx*elem_rx,rxN);
 parfor w=1:rxN
     % Phase shift of antenna array
-    ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false); % 200x32
+    ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false, 0.5); % 200x32
     ant_tx=reshape(ant_tx.', 1, elem_tx, rayN); % 1x32x200
-    ant_rx=psht(array_rx, dir_rx(:,:,w), fc, false); % 200x8
+    ant_rx=psht(array_rx, dir_rx(:,:,w), fc, false, 0.5); % 200x8
     ant_rx=reshape(ant_rx.', elem_rx, 1, rayN); % 8x1x200
     % Applying antenna pattern on plane wave
     tx=repmat(ant_tx, elem_rx, 1, 1); % 8x32x200
@@ -90,7 +92,7 @@ cpsm=cp(:);
 clear Hf
 % save cpsm cpsm
 % %--------------------------------------
-%% Save capacity and channel matrix
+%% Save channel matrix and capacity
 if rxN>735
     hf_los=hf(:,:,1:132);
     hf_nlos1=hf(:,:,133:433);
@@ -104,8 +106,12 @@ save( strcat(strSave,'/capacity'), 'cp');
 clear hf_los hf_nlos*
 %% RMS delay
 ht=ifft(hf);
-clear hf
+% Received power
+rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+rxP=rxP(:);
+% clear hf
 pdp=squeeze(sum(abs(ht).^2,2));
+clear ht
 % Time-intergrated power
 pm=sum(pdp,1);
 % Mean delay
@@ -114,8 +120,6 @@ tm=sum(bsxfun(@times, pdp, tau.'),1);
 tau2=tau(:).^2;
 st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
-rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=rxP(:);
 
 %% Save data
 save( strcat(strSave,'/rmsDelay'), 'st');%% Received power

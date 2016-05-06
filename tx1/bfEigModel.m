@@ -13,6 +13,9 @@ function [ cpeig ] = bfEigModel( hf, dir )
 %
 %% Dominant eigenmode
 strSave=strcat(mfilename('fullpath'), dir)
+if exist(strSave, 'dir')~=7
+    mkdir(strSave);
+end
 elem_tx=32;
 elem_rx=8;
 Nf=801;

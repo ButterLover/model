@@ -36,10 +36,11 @@ parfor w=1:rxN
     cp_t=log2(1+snr*abs(sigma).^2);
     cp_eig(w)=mean(cp_t);
 end
+clear Hf
 cp_eig=cp_eig(:);
 cp=cp_eig;
-% save cpeig cp_eig
-%% RMS delay
+save cpeig cp_eig
+%% Save channel matrix and capacity
 hfeig=reshape(hfeig, Nf, 1, []);
 if rxN>735
     hfeig_los=hfeig(:,:,1:132);
@@ -47,7 +48,14 @@ if rxN>735
     hfeig_nlos2=hfeig(:,:,434:734);
     hfeig_nlos3=hfeig(:,:,735:end);
 end
+if rxN>735
+    save( strcat(strSave,'/channelMatrix'), 'hfeig_los', 'hfeig_nlos1', 'hfeig_nlos2', 'hfeig_nlos3');
+end
+% save( strcat(strSave,'/capacity'), 'cp');
+clear hfeig_los hfeig_nlos*
+%% RMS delay
 ht=ifft(hfeig);
+clear hfeig
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
 pm=sum(pdp,1);
@@ -60,10 +68,6 @@ st=st(:);
 rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=rxP(:);
 %% Save data
-% if rxN>735
-% save( strcat(strSave,'/channelMatrix'), 'hfeig_los', 'hfeig_nlos1', 'hfeig_nlos2', 'hfeig_nlos3');
-% end
 % save( strcat(strSave,'/rmsDelay'), 'st');
 % save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
-% save( strcat(strSave,'/capacity'), 'cp');
 toc

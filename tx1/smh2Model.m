@@ -1,16 +1,28 @@
-% Calculating Hybrid SM capacity outdoor 15 GHz Tx1
-% Steering vector applied on transfer function
-% MIMO case: tx - 8x4  rx - 1x2 linear subarray, 4 subarrays with lambda
-% spacing
-clear all; close all;
-tic
-load rayAm al phase toa
-load doa doa
-load dod
-strSave=mfilename('fullpath')
-op=1;
-ed=58;
+function [ hfsm2 ] = smh2Model( op, ed, al, doa, dod, phase, toa, dir )
+%SMH4MODEL [ hf ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir )
+% Calculating hybrid Spatial multiplexing capacity outdoor Tx1
+% MIMO case: 
+% tx - 8x4  rx - 1x4 with all antenna elements lambda/2 spacing
+% 2 subarrays with spacing lambda each
+%
+% Input:
+% op - the first antenna index
+% ed - the last antenna indes ( Indicating rx calculation range, eg. 1:132 for LOS )
+% al - plane wave amplitude in dB, SISO from WirelessInsite,
+% doa - direction of arrival in degree at Rx, [ phi, theta]
+% dod - direction of departure in degree at Tx, [ phi, theta]
+% phase - plane wave phase in degree
+% toa - plane wave time of arrive
+% dir - saving data directory
+%
+% Output:
+% hf - channel transfer function with antenna array phase shift applied
+%
 %%
+strSave=strcat(mfilename('fullpath'), dir)
+if exist(strSave, 'dir')~=7
+    mkdir(strSave);
+end
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degreeBButterLover
 doa_theta=doa(:,2,op:ed); % degree
@@ -23,7 +35,7 @@ al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
 clear al doa dod
 % Initialization parameters
 fc=15e9;
-bw=1e9; % System bandwidth
+bw=1e9; % System bandwidtha
 Nf=801; % Number of subchannels
 ft=bw/(Nf-1);   % Frequency spacing between two bins
 fk=fc-bw/2:ft:fc+bw/2;   % Frequency range
@@ -35,8 +47,8 @@ No=k*T; % Noise level
 snr=db2pow(Ptx)/(No*B);
 
 array_tx=[4 1 8];   % 8x4 XZ plane
-array_rx=[2 1 1];   % 8x1 Linear X
-Nb_rx=4;
+array_rx=[4 1 1];   % 8x1 Linear X
+Nb_rx=2;
 elem_tx=prod(array_tx);
 elem_rx=prod(array_rx);
 dir_tx=[dod_phi dod_theta];
@@ -48,7 +60,7 @@ theta=linspace(0, 180, 45);
 [ phi2, theta2]=meshgrid(phi, theta);
 dirs_t=[phi2(:), theta2(:)];
 clear phi phi2 theta theta2 phase prx
-hfsm4=zeros(Nf, elem_tx*Nb_rx, rxN);
+hfsm2=zeros(Nf, elem_tx*Nb_rx, rxN);
 parfor w=1:rxN 
     % Phase shift of antenna array
     ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false, 0.5); % 200x32
@@ -78,7 +90,7 @@ parfor w=1:rxN
         hf_s=[hf_s; times3d(as_rx_t, hftt)]; % 4x32x801
     end 
     % Saving channel matrix
-    hfsm4(:,:,w)=reshape(hf_s, [], Nf).';
+    hfsm2(:,:,w)=reshape(hf_s, [], Nf).';
     % Applying steering vector
     R=times3d( hf_s, permute( conj( hf_s), [2 1 3] )); % 4x4x801
     gamma=waterfill(hf_s); % 4x801    
@@ -93,22 +105,22 @@ end
 clear toa dir_tx dir_rx dirs_t
 %% Capacity of estimating directional beamforming
 cp=cp(:);
-cpsm4=cp;
-save cpsm4 cpsm4
+cpsm2=cp;
+% save cpsm2 cpsm2
 %% Save capacity and channel matrix
 if rxN>735
-    hfsm4_los=hfsm4(:,:,1:132);
-    hfsm4_nlos1=hfsm4(:,:,133:433);
-    hfsm4_nlos2=hfsm4(:,:,434:734);
-    hfsm4_nlos3=hfsm4(:,:,735:end);
+    hfsm2_los=hfsm2(:,:,1:132);
+    hfsm2_nlos1=hfsm2(:,:,133:433);
+    hfsm2_nlos2=hfsm2(:,:,434:734);
+    hfsm2_nlos3=hfsm2(:,:,735:end);
 end
 if rxN>735
-    save( strcat(strSave,'/channelMatrix'), 'hfsm4_los', 'hfsm4_nlos1', 'hfsm4_nlos2', 'hfsm4_nlos3');
+    save( strcat(strSave,'/channelMatrix'), 'hfsm2_los', 'hfsm2_nlos1', 'hfsm2_nlos2', 'hfsm2_nlos3');
 end
-% save( strcat(strSave,'/capacity'), 'cp');
-clear hfsm4_los hfsm4_nlos*
+save( strcat(strSave,'/capacity'), 'cp');
+clear hfsm2_los hfsm2_nlos*
 %% RMS delay
-ht=ifft(hfsm4);
+ht=ifft(hfsm2);
 tau=0:1/bw:1/ft;    % Calculating delay
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
@@ -123,6 +135,8 @@ st=st(:);
 rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=rxP(:);
 %% Save data
-% save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
-% save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
+save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
+save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
 toc
+end
+

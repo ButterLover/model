@@ -5,7 +5,7 @@ clc;clear all; close all;
 tic
 % generateData;
 op=1;
-ed=968;
+ed=58;
 load rayAm
 load doa
 load dod
@@ -18,9 +18,12 @@ al0=al;
 al=al0; % Isotropic antenna plane wave are the same for all rotation
 % rotation 0
 doa=doa0;
-hf=smModel( op, ed, al, doa, dod, phase, toa, '\iso\r0' );
-bfModel( hf, '\iso\r0' );
-bfEigModel( hf, '\iso\r0' );
+dir='\iso\r0';
+hf=smModel( op, ed, al, doa, dod, phase, toa, dir );
+bfModel( hf, dir );
+bfEigModel( hf, dir );
+smh2Model( op, ed, al, doa, dod, phase, toa, dir );
+smh4Model( op, ed, al, doa, dod, phase, toa, dir );
 %% =============================  Iso r90  ===============================|
 % x-----------------------------------------------------------------------x
 % x----------------------Antenna element pattern iso ---------------------x

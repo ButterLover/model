@@ -14,6 +14,9 @@ function [ cpbf ] = bfModel( Hf, dir )
 
 %%
 strSave=strcat(mfilename('fullpath'), dir)
+if exist(strSave, 'dir')~=7
+    mkdir(strSave);
+end
 % Initialization parameters
 [Nf, ~, rxN]=size(Hf);
 Hf=permute(Hf, [2 1 3]);

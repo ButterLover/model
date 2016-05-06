@@ -10,8 +10,6 @@ strSave=mfilename('fullpath')
 op=1;
 ed=58;
 al0=al;
-% al=al_pat2;
-% doa=doa2;
 %%
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degree
@@ -22,7 +20,6 @@ phase=phase(:,:,op:ed);
 al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
 clear al al_p* doa doa2 dod phase
 %%
-% al_lin(2:end,:,:)=0;
 % Initialized parameters
 fc=15e9;
 bw=1e9; % System bandwidth
@@ -61,7 +58,7 @@ parfor w=1:rxN
     hf(:,:,w)=pw2hf(am, toa(:,:,w), fc, bw, Nf);
 end
 clear toa
-% save hf hf
+save hf hf
 %% Capacity averaging on all frequency bins
 snr=db2pow(Ptx)/(No*B);
 Hf=permute(hf, [2 1 3]);
@@ -83,13 +80,18 @@ end
 cpsm=cp(:);
 save cpsm cpsm
 % %--------------------------------------
-%% RMS delay
+%% Save channel matrix and capacity
 if rxN>735
     hf_los=hf(:,:,1:132);
     hf_nlos1=hf(:,:,133:433);
     hf_nlos2=hf(:,:,434:734);
     hf_nlos3=hf(:,:,735:end);
 end
+% if rxN>735
+%     save( strcat(strSave,'/channelMatrix'), 'hf_los', 'hf_nlos1', 'hf_nlos2', 'hf_nlos3');
+% end
+% save( strcat(strSave,'/capacity'), 'cp');
+%% RMS delay
 ht=ifft(hf);
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
@@ -104,10 +106,6 @@ rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=rxP(:);
 
 %% Save data
-% if rxN>735
-%     save( strcat(strSave,'/channelMatrix'), 'hf_los', 'hf_nlos1', 'hf_nlos2', 'hf_nlos3');
-% end
 % save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
 % save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
-% save( strcat(strSave,'/capacity'), 'cp');
 toc
