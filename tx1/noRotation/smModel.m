@@ -3,15 +3,15 @@
 % MIMO case: tx - 8x4  rx - 1x8
 clc;clear all; close all;
 tic
-load rayAm al_pat2 phase toa
-load doa doa2
+load rayAm al phase toa
+load doa doa
 load dod
 strSave=mfilename('fullpath')
 op=1;
-ed=2;
-% al0=al;
-al=al_pat2;
-doa=doa2;
+ed=58;
+al0=al;
+% al=al_pat2;
+% doa=doa2;
 %%
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degree
@@ -48,9 +48,9 @@ clear doa* dod*
 hf=zeros(Nf,elem_tx*elem_rx,rxN);
 parfor w=1:rxN
     % Phase shift of antenna array
-    ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false); % 200x32
+    ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false, 0.5); % 200x32
     ant_tx=reshape(ant_tx.', 1, elem_tx, rayN); % 1x32x200
-    ant_rx=psht(array_rx, dir_rx(:,:,w), fc, false); % 200x8
+    ant_rx=psht(array_rx, dir_rx(:,:,w), fc, false, 0.5); % 200x8
     ant_rx=reshape(ant_rx.', elem_rx, 1, rayN); % 8x1x200
     % Applying antenna pattern on plane wave
     tx=repmat(ant_tx, elem_rx, 1, 1); % 8x32x200
@@ -81,7 +81,7 @@ parfor w=1:rxN
     cp(w)=mean(cp_t);
 end
 cpsm=cp(:);
-% save cpsm cpsm
+save cpsm cpsm
 % %--------------------------------------
 %% RMS delay
 if rxN>735

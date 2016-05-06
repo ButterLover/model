@@ -1,6 +1,7 @@
-% Calculating Beamforming capacity outdoor 15 GHz Tx1
-% This file should be run under the files directions
-% MIMO case: tx - 8x4  rx - 1x2 linear subarray, 4 beams
+% Calculating Hybrid SM capacity outdoor 15 GHz Tx1
+% Steering vector applied on transfer function
+% MIMO case: tx - 8x4  rx - 1x2 linear subarray, 4 subarrays with lambda
+% spacing
 clear all; close all;
 tic
 load rayAm al phase toa
@@ -8,7 +9,7 @@ load doa doa
 load dod
 strSave=mfilename('fullpath')
 op=1;
-ed=20;
+ed=58;
 %%
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degreeBButterLover
@@ -50,7 +51,7 @@ clear dod dod_phi dod_theta doa doa_phi doa_theta phi phi2 theta theta2 phase pr
 for w=1:rxN
     
     % Phase shift of antenna array
-    ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false); % 200x32
+    ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false, 0.5); % 200x32
     ant_tx=reshape(ant_tx.', 1, elem_tx, rayN); % 1x32x200
     ant_rx=psht2(array_rx, dir_rx(:,:,w), fc, Nb_rx); % 200x8
     ant_rx=reshape(ant_rx.', elem_rx*Nb_rx, 1, rayN); % 8x1x200

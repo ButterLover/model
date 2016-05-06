@@ -1,5 +1,5 @@
 % Calculating Beamforming capacity outdoor 15 GHz Tx1
-% This file should be run under the files directions
+% Steering vector applys on plane wave
 % MIMO case: tx - 8x4  rx - 1x2 linear subarray, 4 beams
 clear all; close all;
 tic
@@ -8,7 +8,7 @@ load doa doa
 load dod
 strSave=mfilename('fullpath')
 op=1;
-ed=20;
+ed=58;
 %%
 prx=al(:,:,op:ed);
 doa_phi=doa(:,1,op:ed); % degree
