@@ -17,16 +17,17 @@ doa_theta=doa(:,2,op:ed); % degree
 dod_phi=dod(:,1,op:ed); % degree
 dod_theta=dod(:,2,op:ed); % degree
 phase=phase(:,:,op:ed);
+toa=toa(:,:,op:ed);
 al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
 [ rayN, ~, rxN]=size(al_lin);
-clear al
+clear al doa dod
+%
 % Initialization parameters
 fc=15e9;
 bw=1e9; % System bandwidth
 Nf=801; % Number of subchannels
 ft=bw/(Nf-1);   % Frequency spacing between two bins
 fk=fc-bw/2:ft:fc+bw/2;   % Frequency range
-tau=0:1/bw:1/ft;    % Calculating delay
 B=bw/(Nf-1);    % Frequency bins bandwidth
 Ptx=-30;    % Transmitting power 0dBm=-30dBw
 k=1.381*10e-23;
@@ -41,14 +42,16 @@ elem_tx=prod(array_tx);
 elem_rx=prod(array_rx);
 dir_tx=[dod_phi dod_theta];
 dir_rx=[doa_phi doa_theta];
+clear dod_phi dod_theta doa_phi doa_theta
 % hf=zeros(Nf,elem_tx*elem_rx,rxN); % TF of tx with one subarray 32x2
 phi=linspace(-180, 180, 90);
 theta=linspace(0, 180, 45);
 [ phi2, theta2]=meshgrid(phi, theta);
 dirs_t=[phi2(:), theta2(:)];
-clear dod dod_phi dod_theta doa doa_phi doa_theta phi phi2 theta theta2 phase prx
+clear phi phi2 theta theta2 phase prx
 % hf=zeros(Nf,elem_tx*elem_rx,rxN);
-for w=1:rxN
+hfsm4=zeros(Nf, elem_tx*Nb_rx, rxN);
+parfor w=1:rxN
     
     % Phase shift of antenna array
     ant_tx=psht(array_tx, dir_tx(:,:,w), fc, false, 0.5); % 200x32
@@ -56,57 +59,98 @@ for w=1:rxN
     ant_rx=psht2(array_rx, dir_rx(:,:,w), fc, Nb_rx); % 200x8
     ant_rx=reshape(ant_rx.', elem_rx*Nb_rx, 1, rayN); % 8x1x200
     
-    % Applying antenna pattern on plane wave
-    tx=repmat(ant_tx, elem_rx*Nb_rx, 1, 1); % 8x32x200
-    rx=repmat(ant_rx, 1, elem_tx, 1); % 8x32x200
-    ant=reshape(tx.*rx, [],rayN); % 256x200
-    am=bsxfun(@times, ant.', al_lin(:,:,w)); % 200x256 200x1
-    % Calculating transfer function from plane wave
-    hf(:,:,w)=pw2hf(am, toa(:,:,w), fc, bw, Nf);    % 801x256
-    ht_t=ifft(hf(:,:,w)); % 801x256
-    ht_t=reshape( ht_t.', elem_rx*Nb_rx, elem_tx, [] ); % 8x32x801
-    ht_t=squeeze(sum(ht_t, 2) ); % 8x801
-    % Finding steering vector at rx side
-    hf_t=reshape(fft(ht_t.').', elem_rx, Nb_rx, []); % 2x4x801  
     
-    hft=reshape(hf(:,:,w).', elem_rx, Nb_rx, elem_tx, [] ); % 2x4x32x801
+    % Applying antenna pattern on plane wave
+    ant_tx=repmat(ant_tx, elem_rx*Nb_rx, 1, 1); % 8x32x200
+    ant_rx=repmat(ant_rx, 1, elem_tx, 1); % 8x32x200
+    ant=reshape(ant_tx.*ant_rx, [],rayN); % 256x200
+    am=bsxfun(@times, ant.', al_lin(:,:,w)); % 200x256 200x1
+%     clear rx tx ant ant_rx ant_tx
+    
+    % Calculating transfer function from plane wave
+    hf=pw2hf(am, toa(:,:,w), fc, bw, Nf);    % 801x256
+    hf_t=ifft(hf); % 801x256
+    hf_t=reshape( hf_t.', elem_rx*Nb_rx, elem_tx, [] ); % 8x32x801
+    hf_t=squeeze(sum(hf_t, 2) ); % 8x801
+%     clear am
+    
+    % Finding steering vector at rx side
+    hf_t=reshape(fft(hf_t.').', elem_rx, Nb_rx, []); % 2x4x801      
+    hft=reshape(hf.', elem_rx, Nb_rx, elem_tx, [] ); % 2x4x32x801
+%     clear ht_t hf
+    
     % Steering phase shift
-    as_rx=zeros(Nb_rx, elem_rx);
+%     as_rx=zeros(Nb_rx, elem_rx);
     hf_s=[];
     for w2=1:Nb_rx
-        hf_rx=squeeze(hf_t( :, w2, : ));  % 2x801 Assuming all rx element see the same from tx
-        as_rx_t=findStr( array_rx, hf_rx, dirs_t, fc, 1 ); % 4x2 Four beams of 2 ant elements
+%         hf_rx=squeeze(hf_t( :, w2, : ));  % 2x801 Assuming all rx element see the same from tx
+        as_rx_t=findStr( array_rx, squeeze(hf_t( :, w2, : )), dirs_t, fc, 1 ); % 4x2 Four beams of 2 ant elements
         wf=norm( as_rx_t( 1, :), 'fro');
         as_rx_t=as_rx_t./wf;
-        as_rx(w2, :)=as_rx_t;    % Normalization
+%         as_rx(w2, :)=as_rx_t;    % Normalization
         
         hftt=squeeze(hft( :, w2, :, :)); % 2x32x801
-        hf_st=times3d(as_rx_t, hftt); % 1x32x801
-        hf_s=[hf_s; hf_st]; % 4x32x801
+%         hf_st=times3d(as_rx_t, hftt); % 1x32x801
+        hf_s=[hf_s; times3d(as_rx_t, hftt)]; % 4x32x801
     end
+%     clear hft hftt hf_st hf_rx hf_t
+    
+    % Saving channel matrix
+    hfsm4(:,:,w)=reshape(hf_s, [], Nf).';
     % Applying steering vector
-%     hf_s=times3d(as_rx, hf_t);  % 4x32x801
-    hf_sh=permute( conj( hf_s), [2 1 3] ); % 32x4x801
-    R=times3d( hf_s, hf_sh); % 4x4x801
+%     hf_sh=permute( conj( hf_s), [2 1 3] ); % 32x4x801
+    R=times3d( hf_s, permute( conj( hf_s), [2 1 3] )); % 4x4x801
     gamma=waterfill(hf_s); % 4x801
+%     clear hf_s hf_sh
+    
     lambda=zeros( Nb_rx, Nf);
     for w1=1:Nf
         lambda( :, w1 )=sort(eig(R(:,:,w1)), 'descend');
     end
+%     clear R
     % Calculating capacity
     cp_t=sum(log2(1+snr*gamma.*lambda./elem_tx),1);
-    cp(w)=mean(cp_t);
+    cp(w)=mean(cp_t(:));
+    
+    
 end
-% clear ant* tx rx am a* toa tau dir* do* N* phase prx f
+clear toa dir_tx dir_rx dirs_t
 % clear lambda
 % save hf2 hf
 %% Capacity of estimating directional beamforming
-cpsm4=cp(:);
+cp=cp(:);
+cpsm4=cp;
 save cpsm4 cpsm4
-%% Capacity method 3 classic shannon
-% Hf=sum(abs(hf).^2, 2);
-% cpbf=mean(log2(1+snr*Hf));
-% cpbf=cpbf(:);
-% save cpbf cpbf
-% save hf hf
+%% Save capacity and channel matrix
+if rxN>735
+    hfsm4_los=hfsm4(:,:,1:132);
+    hfsm4_nlos1=hfsm4(:,:,133:433);
+    hfsm4_nlos2=hfsm4(:,:,434:734);
+    hfsm4_nlos3=hfsm4(:,:,735:end);
+end
+if rxN>735
+    save( strcat(strSave,'/channelMatrix'), 'hfsm4_los', 'hfsm4_nlos1', 'hfsm4_nlos2', 'hfsm4_nlos3');
+end
+% save( strcat(strSave,'/capacity'), 'cp');
+clear hfsm4_los hfsm4_nlos*
+%% RMS delay
+ht=ifft(hfsm4);
+tau=0:1/bw:1/ft;    % Calculating delay
+pdp=squeeze(sum(abs(ht).^2,2));
+% Time-intergrated power
+pm=sum(pdp,1);
+% Mean delay
+tm=sum(bsxfun(@times, pdp, tau.'),1);
+% Rms delay spread
+tau2=tau(:).^2;
+clear tau
+st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
+st=st(:);
+rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+rxP=rxP(:);
+
+%% Save data
+% save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
+% save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
+
 toc
