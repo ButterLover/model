@@ -32,15 +32,15 @@ dod=dod(:,2:3,:);
 doa1=doa;
 doa2=doa;
 doa3=doa;
-phi=doa(:,1,:)-45;
+phi=doa(:,1,:)+45;
 phi(phi>180)=mod(phi(phi>180),-180);
 phi(phi<-180)=mod(phi(phi<-180),180);
 doa1(:,1,:)=phi;
-phi=doa(:,1,:)-90;
+phi=doa(:,1,:)+90;
 phi(phi>180)=mod(phi(phi>180),-180);
 phi(phi<-180)=mod(phi(phi<-180),180);
 doa2(:,1,:)=phi;
-phi=doa(:,1,:)-135;
+phi=doa(:,1,:)+135;
 phi(phi>180)=mod(phi(phi>180),-180);
 phi(phi<-180)=mod(phi(phi<-180),180);
 doa3(:,1,:)=phi;
@@ -69,14 +69,15 @@ dis=sqrt(abs(x-tx(1)).^2+abs(y-tx(2)).^2+abs(z-tx(3)).^2);
 % dis2=sqrt(abs(x-tx2(1)).^2+abs(y-tx2(2)).^2+abs(z-tx2(3)).^2);
 
 %% Adding patch antenna pattern
-load patchPattern
+load patchYPattern % For tx, patch radiates North
+load patchPattern % For rx, patch radiates South
 % Adding ant pattern at tx side
 theta_tx=round(dod(:,2,:)/2); % Theta for tx side
 theta_tx(theta_tx==0)=1;
 phi_tx=round(dod(:,1,:)/2)+90;
 phi_tx(phi_tx==0)=1;
-ind_tx=sub2ind(size(patch),theta_tx, phi_tx);
-al_lin=db2mag(al).*exp(1j*2*pi*degtorad(phase)).*patch(ind_tx);
+ind_tx=sub2ind(size(pat),theta_tx, phi_tx);
+al_lin=db2mag(al).*exp(1j*2*pi*degtorad(phase)).*pat(ind_tx);
 
 % Adding patch pattern at rx side
 theta_rx=round(doa(:,2,:)/2); % Theta is all the same for any rotation
