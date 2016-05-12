@@ -1,5 +1,5 @@
-function [ hfsm4 ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir )
-%SMH4MODEL [ hf ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir )
+function [ hfsm4 ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir, Ptx )
+%SMH4MODEL [ hfsm4 ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir, Ptx )
 % Calculating hybrid Spatial multiplexing capacity outdoor Tx1
 % MIMO case: 
 % tx - 8x4  rx - 1x2 with all antenna elements lambda/2 spacing
@@ -40,7 +40,7 @@ Nf=801; % Number of subchannels
 ft=bw/(Nf-1);   % Frequency spacing between two bins
 fk=fc-bw/2:ft:fc+bw/2;   % Frequency range
 B=bw/(Nf-1);    % Frequency bins bandwidth
-Ptx=-30;    % Transmitting power 0dBm=-30dBw
+% Ptx=-30;    % Transmitting power 0dBm=-30dBw
 k=1.381*10e-23;
 T=290;
 No=k*T; % Noise level
@@ -132,8 +132,8 @@ tau2=tau(:).^2;
 clear tau
 st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
-rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=rxP(:);
+pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+rxP=pw(:)+Ptx;
 %% Save data
 save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
 save( strcat(strSave,'/rxPowerMIMO'), 'rxP');

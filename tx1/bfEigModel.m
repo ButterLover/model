@@ -1,5 +1,5 @@
-function [ cpeig ] = bfEigModel( hf, dir )
-%BFEIGMODEL [ cpeig ] = bfEigModel( hf, dir )
+function [ cpeig ] = bfEigModel( hf, dir, Ptx )
+%BFEIGMODEL [ cpeig ] = bfEigModel( hf, dir, Ptx )
 %
 %  Dominant eigmode beamforming
 %
@@ -29,12 +29,11 @@ Hf=reshape(Hf, elem_rx, elem_tx, Nf, []);
 [~, ~, ~, rxN]=size(Hf);
 clear hf
 %%
-bw=1e9; % System bandwidth
-B=bw/(Nf-1);    % Frequency bins bandwidth
-Ptx=-30;    % Transmitting power 0dBm=-30dBw
+% Ptx=-30;    % Transmitting power 0dBm=-30dBw
 k=1.381*10e-23;
 T=290;
 No=k*T; % Noise level
+B=bw/(Nf-1);    % Frequency bins bandwidth
 snr=db2pow(Ptx)/(No*B);
 cp_eig=zeros(rxN, 1);
 parfor w=1:rxN
@@ -48,11 +47,11 @@ parfor w=1:rxN
     end
     hfeig(:,w)=sigma;
     cp_t=log2(1+snr*abs(sigma).^2);
-    cp_eig(w)=mean(cp_t);
+    cp_eig(w)=mean(cp_t); 
 end
 clear Hf
-cp_eig=cp_eig(:);
-cp=cp_eig;
+cpeig=cp_eig(:);
+cp=cpeig;
 % save cpeig cp_eig
 %% Save channel matrix and capacity
 hfeig=reshape(hfeig, Nf, 1, []);
@@ -79,8 +78,8 @@ tm=sum(bsxfun(@times, pdp, tau.'),1);
 tau2=tau(:).^2;
 st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
-rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=rxP(:);
+pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+rxP=pw(:)+Ptx;
 
 %% Save data
 save( strcat(strSave,'/rmsDelay'), 'st');

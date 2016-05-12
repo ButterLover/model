@@ -1,5 +1,5 @@
-function [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir )
-%SMMODEL [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir )
+function [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir, Ptx )
+%SMMODEL [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir, Ptx )
 %
 % Calculating Spatial multiplexing capacity outdoor Tx1
 % MIMO case: tx - 8x4  rx - 1x8 with all antenna elements lambda/2 spacing
@@ -40,7 +40,7 @@ ft=bw/(Nf-1);   % Frequency spacing between two bins
 tau=0:1/bw:1/ft;    % Calculating delay
 [rayN, ~, rxN]=size(prx);
 B=bw/(Nf-1);    % Frequency bins bandwidth
-Ptx=-30;    % Transmitting power 0dBm=-30dBw
+% Ptx=-30;    % Transmitting power 0dBm=-30dBw
 k=1.381*10e-23;
 T=290;
 No=k*T; % Noise level
@@ -107,8 +107,8 @@ clear hf_los hf_nlos*
 %% RMS delay
 ht=ifft(hf);
 % Received power
-rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=rxP(:);
+pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+rxP=pw(:)+Ptx;
 % clear hf
 pdp=squeeze(sum(abs(ht).^2,2));
 clear ht

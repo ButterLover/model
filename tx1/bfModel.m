@@ -1,5 +1,5 @@
-function [ cpbf ] = bfModel( Hf, dir )
-%BFMODEL [ cpbf ] = bfModel( hf, dir )
+function [ cpbf ] = bfModel( Hf, dir, Ptx)
+%BFMODEL [ cpbf ] = bfModel( Hf, dir, Ptx)
 %  
 %  Directional beamforming
 % 
@@ -36,7 +36,7 @@ dirs_t=[dod_phi(:), dod_theta(:)];
 clear dod_phi dod_theta phi theta
 
 B=bw/(Nf-1);    % Frequency bins bandwidth
-Ptx=-30;    % Transmitting power 0dBm=-30dBw
+% Ptx=-30;    % Transmitting power 0dBm=-30dBw
 k=1.381*10e-23;
 T=290;
 No=k*T; % Noise level
@@ -98,8 +98,8 @@ tm=sum(bsxfun(@times, pdp, tau.'),1);
 tau2=tau(:).^2;
 st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
-rxP=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=rxP(:);
+pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
+rxP=pw(:)+Ptx;
 %% Save data
 save( strcat(strSave,'/rmsDelay'), 'st');
 save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
