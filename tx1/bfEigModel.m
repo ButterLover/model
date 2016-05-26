@@ -1,4 +1,4 @@
-function [ cpeig ] = bfEigModel( hf, dir, Ptx )
+function [ cpeig ] = bfEigModel( hf, dir, Ptx, fc, bw )
 %BFEIGMODEL [ cpeig ] = bfEigModel( hf, dir, Ptx )
 %
 %  Dominant eigmode beamforming
@@ -19,8 +19,8 @@ end
 elem_tx=32;
 elem_rx=8;
 Nf=801;
-fc=15e9;
-bw=1e9; % System bandwidth
+% fc=15e9;
+% bw=1e9; % System bandwidth
 ft=bw/(Nf-1);   % Frequency spacing between two bins
 fk=fc-bw/2:ft:fc+bw/2;   % Frequency range
 tau=0:1/bw:1/ft;    % Calculating delay
@@ -78,8 +78,8 @@ tm=sum(bsxfun(@times, pdp, tau.'),1);
 tau2=tau(:).^2;
 st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
-pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=pw(:)+Ptx;
+pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1))); % dBm
+rxP=pw(:)+Ptx+30;
 
 %% Save data
 save( strcat(strSave,'/rmsDelay'), 'st');

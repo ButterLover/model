@@ -1,4 +1,4 @@
-function [ hfsm4 ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir, Ptx )
+function [ hfsm4 ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir, Ptx, fc, bw )
 %SMH4MODEL [ hfsm4 ] = smh4Model( op, ed, al, doa, dod, phase, toa, dir, Ptx )
 % Calculating hybrid Spatial multiplexing capacity outdoor Tx1
 % MIMO case: 
@@ -34,8 +34,8 @@ al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
 [ rayN, ~, rxN]=size(al_lin);
 clear al doa dod
 % Initialization parameters
-fc=15e9;
-bw=1e9; % System bandwidth
+% fc=15e9;
+% bw=1e9; % System bandwidth
 Nf=801; % Number of subchannels
 ft=bw/(Nf-1);   % Frequency spacing between two bins
 fk=fc-bw/2:ft:fc+bw/2;   % Frequency range
@@ -133,7 +133,7 @@ clear tau
 st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
 pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=pw(:)+Ptx;
+rxP=pw(:)+Ptx+30;
 %% Save data
 save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
 save( strcat(strSave,'/rxPowerMIMO'), 'rxP');

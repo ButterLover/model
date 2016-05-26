@@ -1,4 +1,4 @@
-function [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir, Ptx )
+function [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir, Ptx, fc, bw )
 %SMMODEL [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir, Ptx )
 %
 % Calculating Spatial multiplexing capacity outdoor Tx1
@@ -32,8 +32,8 @@ al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
 clear al al_p* doa doa2 dod phase
 %%
 % Initialized parameters
-fc=15e9;
-bw=1e9; % System bandwidth
+% fc=15e9;
+% bw=1e9; % System bandwidth
 Nf=801;
 ft=bw/(Nf-1);   % Frequency spacing between two bins
 % f=fc-bw/2:ft:fc+bw/2;   % Frequency range
@@ -108,7 +108,7 @@ clear hf_los hf_nlos*
 ht=ifft(hf);
 % Received power
 pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
-rxP=pw(:)+Ptx;
+rxP=pw(:)+Ptx+30;
 % clear hf
 pdp=squeeze(sum(abs(ht).^2,2));
 clear ht

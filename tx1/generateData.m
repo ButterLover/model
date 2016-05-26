@@ -109,7 +109,7 @@ save doa doa doa*
 save rayAm al al_pat* phase toa
 save rxPower prx    % Received power of isotropic SISO
 %% Multiplexing richness
-ind=al>-110;
+ind=al>-106.5;
 mul=sum(ind,1);
 mul=mul(:);
 save mulR mul
