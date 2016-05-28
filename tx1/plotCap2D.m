@@ -1,5 +1,6 @@
 %% capacity 2D map all
-close all;
+clear all; close all;
+load position
 str=pwd;
 cmin=0;
 cmax=87;

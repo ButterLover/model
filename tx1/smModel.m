@@ -1,33 +1,40 @@
-function [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir, Ptx, fc, bw )
-%SMMODEL [ hf ] = smModel( op, ed, al, doa, dod, phase, toa, dir, Ptx )
+function [ hf, cpsm, st, rxP ] = smModel( rx_ind, al, doa, dod, phase, toa, dir, Ptx, fc, bw, save_flag)
+%SMMODEL [ hf, cpsm, st, rxP ] = smModel( rx_ind, al, doa, dod, phase, toa, dir, Ptx, fc, bw, save_flag)
 %
 % Calculating Spatial multiplexing capacity outdoor Tx1
 % MIMO case: tx - 8x4  rx - 1x8 with all antenna elements lambda/2 spacing
 %
 % Input:
-% op - the first antenna index
-% ed - the last antenna indes ( Indicating rx calculation range, eg. 1:132 for LOS )
-% al - plane wave amplitude in dB, SISO from WirelessInsite,
-% doa - direction of arrival in degree at Rx, [ phi, theta]
-% dod - direction of departure in degree at Tx, [ phi, theta]
+% rx_ind - the index of rx which needed in caculation, eg. (1)rx_ind = 1:1:132
+% for all LOS (2) rx_ind = 82 for single point rx #82 caculation
+% al - plane wave amplitude in dBm, SISO from WirelessInsite, /dBm
+% doa - direction of arrival in degree at Rx, [ phi, theta] in degree
+% dod - direction of departure in degree at Tx, [ phi, theta] in degree
 % phase - plane wave phase in degree
 % toa - plane wave time of arrive
 % dir - saving data directory
+% Ptx - transmitting power /dBw
+% fc - center frequency /Hz
+% bw - system bandwidth /Hz
+% save_flag - true for saving data in folder
 %
 % Output:
 % hf - channel transfer function with antenna array phase shift applied
+% cpsm - spatial multiplexing capacity /bps/Hz
+% st - rms delay spread /s
+% rxP - received power /dBm
 %
 %%
 strSave=strcat(mfilename('fullpath'), dir)
 if exist(strSave, 'dir')~=7
     mkdir(strSave);
 end
-prx=al(:,:,op:ed);
-doa_phi=doa(:,1,op:ed); % degree
-doa_theta=doa(:,2,op:ed); % degree
-dod_phi=dod(:,1,op:ed); % degree
-dod_theta=dod(:,2,op:ed); % degree
-phase=phase(:,:,op:ed);
+prx=al(:,:,rx_ind);
+doa_phi=doa(:,1,rx_ind); % degree
+doa_theta=doa(:,2,rx_ind); % degree
+dod_phi=dod(:,1,rx_ind); % degree
+dod_theta=dod(:,2,rx_ind); % degree
+phase=phase(:,:,rx_ind);
 al_lin=db2mag(prx).*exp(1j*2*pi*degtorad(phase));    % Plane wave
 clear al al_p* doa doa2 dod phase
 %%
@@ -93,16 +100,13 @@ clear Hf
 % save cpsm cpsm
 % %--------------------------------------
 %% Save channel matrix and capacity
-if rxN>735
+if rxN>735 && save_flag
     hf_los=hf(:,:,1:132);
     hf_nlos1=hf(:,:,133:433);
     hf_nlos2=hf(:,:,434:734);
     hf_nlos3=hf(:,:,735:end);
-end
-if rxN>735
     save( strcat(strSave,'/channelMatrix'), 'hf_los', 'hf_nlos1', 'hf_nlos2', 'hf_nlos3');
 end
-save( strcat(strSave,'/capacity'), 'cp');
 clear hf_los hf_nlos*
 %% RMS delay
 ht=ifft(hf);
@@ -122,10 +126,13 @@ st=sqrt(sum(bsxfun(@times, pdp, tau2),1)./pm-tm.^2);
 st=st(:);
 
 %% Save data
-save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
-save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
+if save_flag
+    save( strcat(strSave,'/rmsDelay'), 'st');%% Received power
+    save( strcat(strSave,'/rxPowerMIMO'), 'rxP');
+    save( strcat(strSave,'/capacity'), 'cp');
+end
 
-toc
+% toc
 
 end
 

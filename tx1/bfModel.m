@@ -1,15 +1,22 @@
-function [ cpbf ] = bfModel( Hf, dir, Ptx, fc, bw)
-%BFMODEL [ cpbf ] = bfModel( Hf, dir, Ptx)
+function [ hfbf, cpbf, st, rxP ] = bfModel( Hf, dir, Ptx, fc, bw, save_flag )
+%BFMODEL [ hfbf, cpbf, st, rxP ] = bfModel( Hf, dir, Ptx, fc, bw, save_flag )
 %  
 %  Directional beamforming
 % 
-%  Input: 
-%  hf - channel transfer function with antenna array phase shift applied
-%  dir - data saving directory
+% Input: 
+% hf - channel transfer function with antenna array phase shift applied
+% dir - data saving directory
+% Ptx - transmitting power
+% fc - center frequency
+% bw - system bandwidth
+% save_flag - true for saving data in folder
 % 
 % 
-%  Output:
-%  cpbf - capacity of beamforming
+% Output:
+% hfbf - transfer function
+% cpbf - capacity of beamforming
+% st - rms delay spread
+% rxP - received power
 % 
 
 %%
@@ -75,20 +82,20 @@ cp=cp_t(:);
 cpbf=cp;
 %% Save channel matrix and capacity
 hfbf=reshape(hfbf, Nf, 1, []);
-if rxN>735
+if rxN>735 && save_flag
     hfbf_los=hfbf(:,:,1:132);
     hfbf_nlos1=hfbf(:,:,133:433);
     hfbf_nlos2=hfbf(:,:,434:734);
     hfbf_nlos3=hfbf(:,:,735:end);
-end
-if rxN>735
     save( strcat(strSave,'/channelMatrix'), 'hfbf_los', 'hfbf_nlos1', 'hfbf_nlos2', 'hfbf_nlos3');
 end
-save( strcat(strSave,'/capacity'), 'cp');
-clear hfbf_los hfbf_nlos* cp cp_t
+
+clear hfbf_los hfbf_nlos* cp_t
 %% RMS delay
 ht=ifft(hfbf);
-clear hfbf
+if save_flag
+    clear hfbf
+end
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
 pm=sum(pdp,1);
@@ -101,9 +108,11 @@ st=st(:);
 pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1)));
 rxP=pw(:)+Ptx+30;
 %% Save data
-save( strcat(strSave,'/rmsDelay'), 'st');
-save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
-
-toc
+if save_flag
+    save( strcat(strSave,'/rmsDelay'), 'st');
+    save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
+    save( strcat(strSave,'/capacity'), 'cp');
+end
+% toc
 end
 

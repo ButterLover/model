@@ -1,15 +1,21 @@
-function [ cpeig ] = bfEigModel( hf, dir, Ptx, fc, bw )
-%BFEIGMODEL [ cpeig ] = bfEigModel( hf, dir, Ptx )
+function [ hfeig, cpeig, st, rxP ] = bfEigModel( hf, dir, Ptx, fc, bw, save_flag )
+%BFEIGMODEL [ cpeig, hfeig, st, rxP ] = bfEigModel( hf, dir, Ptx, fc, bw, save_flag )
 %
-%  Dominant eigmode beamforming
+% Dominant eigmode beamforming
 %
-%  Input:
-%  hf - channel transfer function with antenna array phase shift applied
-%  dir - data saving directory
+% Input:
+% hf - channel transfer function with antenna array phase shift applied
+% dir - data saving directory
+% Ptx - transmitting power
+% fc - center frequency
+% bw - system bandwidth
+% save_flag - true for saving data in folder
 %
-%
-%  Output:
-%  cpeig - capacity of dominant eigmode
+% Output:
+% hfeig - channel transfer function with beamforming weights
+% cpeig - capacity of dominant eigmode
+% st - rms delay spread
+% rxP - received power
 %
 %% Dominant eigenmode
 strSave=strcat(mfilename('fullpath'), dir)
@@ -55,20 +61,19 @@ cp=cpeig;
 % save cpeig cp_eig
 %% Save channel matrix and capacity
 hfeig=reshape(hfeig, Nf, 1, []);
-if rxN>735
+if rxN>735 && save_flag
     hfeig_los=hfeig(:,:,1:132);
     hfeig_nlos1=hfeig(:,:,133:433);
     hfeig_nlos2=hfeig(:,:,434:734);
     hfeig_nlos3=hfeig(:,:,735:end);
-end
-if rxN>735
     save( strcat(strSave,'/channelMatrix'), 'hfeig_los', 'hfeig_nlos1', 'hfeig_nlos2', 'hfeig_nlos3');
 end
-save( strcat(strSave,'/capacity'), 'cp');
 clear hfeig_los hfeig_nlos*
 %% RMS delay
 ht=ifft(hfeig);
-clear hfeig
+if save_flag
+    clear hfeig
+end
 pdp=squeeze(sum(abs(ht).^2,2));
 % Time-intergrated power
 pm=sum(pdp,1);
@@ -82,9 +87,11 @@ pw=pow2db(squeeze(mean(sum(abs(ht).^2,2),1))); % dBm
 rxP=pw(:)+Ptx+30;
 
 %% Save data
-save( strcat(strSave,'/rmsDelay'), 'st');
-save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
-
-toc
+if save_flag
+    save( strcat(strSave,'/capacity'), 'cp');
+    save( strcat(strSave,'/rmsDelay'), 'st');
+    save( strcat(strSave,'/rxPowerMIMO'), 'rxP');%% Received power
+end
+% toc
 end
 
