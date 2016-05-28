@@ -90,5 +90,4 @@ save( strcat(strSave,'/rmsDelay'), 'st*');
 save( strcat(strSave,'/capacity'), 'cp*');
 save( strcat(strSave,'/channel'), 'hf*');
 save( strcat(strSave,'/receivedPower'), 'rxP*');
-
 toc
