@@ -7,7 +7,7 @@ cmax=-30;
 str=pwd;
 % Directional beamforming
 op=1;
-ed=58;
+ed=968;
 load(strcat(str,'\bfModel\iso\r0\rxPowerMIMO.mat'))
 a=10;
 x=x(op:ed);

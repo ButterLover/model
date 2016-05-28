@@ -1,6 +1,6 @@
 %% Multiplexing Rx position
 clear all;
-% close all;
+close all;
 load position
 str=pwd;
 rx1i=[ 10 19 44 67];
@@ -30,6 +30,7 @@ h.Label.String='Channel multiplexing richness';
 legend('Tx','Rx')
 grid on
 xlabel('x [m]');ylabel('y [m]')
+saveas(gcf,'chRaoa2Dlos#1','png')
 
 figure
 plot(tx(1),tx(2),'x');
@@ -48,3 +49,4 @@ h.Label.String='Channel multiplexing richness';
 legend('Tx','Rx')
 grid on
 xlabel('x [m]');ylabel('y [m]')
+saveas(gcf,'chRaoa2Dlos#2','png')

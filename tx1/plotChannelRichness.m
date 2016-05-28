@@ -1,6 +1,6 @@
 % richness 2d map
 clear all;
-% close all;
+close all;
 load position
 str=pwd;
 op=1;
@@ -19,11 +19,13 @@ colormap jet
 h=colorbar;
 % caxis([cmin cmax])
 h.Label.String='Channel multiplexing richness';
-legend('Tx','Rx')
+legend('Tx','Rx','Location','best')
 grid on
-xlabel('x [m]');ylabel('y [m]')
+xlabel('x [m]');ylabel('y [m]');
+title('Channel richness 2D map')
+saveas(gcf,'chR2d','png')
 %% SM PDP of the LOS2 last Rx
-fc=15e9;
+fc=28e9;
 % bw=1e9; % System bandwidth
 bw=800e6;
 Nf=801;
