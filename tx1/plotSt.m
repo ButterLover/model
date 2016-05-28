@@ -1,5 +1,7 @@
 %% Delay spread
-close all;
+clear all;
+% close all;
+load position
 str=pwd;
 op=1;
 ed=48;

@@ -1,4 +1,5 @@
-clear all; close all;
+clear all;
+% close all;
 rot_angle=linspace(-180, 180, 181);
 load(strcat(pwd, '\rotate\iso\capacity'))
 % Directional beamforming

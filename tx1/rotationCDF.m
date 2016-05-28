@@ -1,4 +1,5 @@
-clear all; close all
+clear all;
+% close all;
 load rayAm
 load dod
 load doa

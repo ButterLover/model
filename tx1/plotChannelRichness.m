@@ -1,5 +1,6 @@
 % richness 2d map
-close all;
+clear all;
+% close all;
 load position
 str=pwd;
 op=1;

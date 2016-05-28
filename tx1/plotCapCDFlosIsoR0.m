@@ -1,5 +1,6 @@
 %% Capacity CDF LOS iso r0
-close all;
+clear all;
+% close all;
 str=pwd;
 op=1;
 ed=48;

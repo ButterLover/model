@@ -1,4 +1,6 @@
 %% Received power
+clear all;
+% close all;
 load position
 cmin=-180;
 cmax=-30;

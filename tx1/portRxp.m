@@ -1,4 +1,5 @@
-close all
+clear all;
+% close all;
 load position
 str=pwd;
 Ptx=31.5;

@@ -1,5 +1,7 @@
 %% Multiplexing Rx position
-close all;
+clear all;
+% close all;
+load position
 str=pwd;
 rx1i=[ 10 19 44 67];
 rx2i=[82 90 114 122];

@@ -1,5 +1,6 @@
 %% LOS1 capacity compare
-close all;
+clear all;
+% close all;
 str=pwd;
 op=1;
 ed=48;
