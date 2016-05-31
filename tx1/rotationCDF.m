@@ -5,7 +5,7 @@ load dod
 load doa
 tic
 %
-rx_ind=82;
+rx_ind=[ 10 19 44 67 82 90 114 122];
 Ptx=1.5;
 fc=15e9;
 bw=800e6;
