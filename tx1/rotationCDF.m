@@ -16,7 +16,7 @@ dir=' ';
 parfor w=1:length(rt_phi)
     % Rx rotation
     doat=doa;
-    phi=doat(:,1,:)+rt_phi(:, w);
+    phi=doat(:,1,:)-rt_phi(:, w)+90; % From phi=-180 to 180
     phi(phi>180)=mod(phi(phi>180),-180);
     phi(phi<-180)=mod(phi(phi<-180),180);
     doat(:,1,:)=phi;

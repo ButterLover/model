@@ -49,6 +49,26 @@ for rxi=1:8
     saveas(gcf, strcat('rotISOrx', num2str(rxi)),'png')
 end
 
+for rxi=1:8
+    figure
+    h=cdfplot( cpsm(rxi, :));
+    %     h.LineStyle='--';
+    hold on
+    h=cdfplot( cpbf(rxi, :));
+    h.LineStyle='--';
+    hold on
+    h=cdfplot( cpsm4(rxi, :));
+    h.LineStyle='-.';
+    hold on
+    h=cdfplot( cpsm2(rxi, :));
+    h.LineStyle=':';
+    grid on
+    legend('Location', 'best', 'SM', 'BF', 'Hybrid SM4', 'Hybrid SM2')
+    xlabel('Capacity [bps/Hz]');ylabel('Probability');
+    saveas(gcf, strcat('rotISOcdfRx', num2str(rxi)),'png')
+
+end
+%%
 load(strcat(pwd, '\rotate\patch\capacity'))
 for rxi=1:8
     figure
