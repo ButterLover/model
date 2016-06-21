@@ -8,6 +8,7 @@ function [ outdata, dt ] = psht( array, dir, fc, norm_flag, sp )
 %   dir: direction of rays [phi theta] in degree;
 %   fc: Carrier frequency in Hz
 %   norm_flag: Tx needs normalization (true/ false)
+%   sp: element spacing (0.5 mean lambda/2)
 % 
 %   Output:
 %   phaseShift: Each column is an antenna with different phas shift,
@@ -34,7 +35,7 @@ d=zeros(array);
 x=x(:);
 y=y(:);
 z=z(:);
-dt=[(x-1) (y-1) (z-1)]*lambda./sp;
+dt=[(x-1) (y-1) (z-1)]*lambda.*sp;
 dx=dt(:,1).';
 dy=dt(:,2).';
 dz=dt(:,3).';
