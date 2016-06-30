@@ -1,5 +1,5 @@
 function [ outdata ] = findStr( array, hf, dir, fc, Nb)
-% [ outdata ] = steerVec( array, al, dir, fc, Nb)
+% [ outdata ] = findStr( array, hf, dir, fc, Nb)
 %STEERVEC Calculating steering phase shift for antenna array
 %
 %   Input:

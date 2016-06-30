@@ -102,6 +102,17 @@ phi=round(doa3(:,1,:)/2)+90;
 phi(phi==0)=1;
 ind=sub2ind(size(patch),theta_rx, phi);
 al_pat3=mag2db(abs(al_lin.*patch(ind)));
+
+%% Received power threshold
+% Noise power is -105dBm when Ptx=31.5dBm
+% In ray tracer Ptx=0 dBm, relative noise power is -136.5dBm
+% Plane wave with power less than -136.5dBm should be eliminated.
+al(al<-136.5)=-500;
+al_pat( al_pat<-136.5)=-500;
+al_pat1( al_pat1<-136.5)=-500;
+al_pat2( al_pat2<-136.5)=-500;
+al_pat3( al_pat3<-136.5)=-500;
+
 %%
 save position x y tx dis
 save dod dod    % dod is rotated 45 degree

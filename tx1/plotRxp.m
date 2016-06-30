@@ -159,9 +159,9 @@ xlabel('Distance [m]');ylabel('Total received power [dBm]');
 legend('Location', 'best', 'Dir BF', 'DET', 'SM', 'SMH4', 'SMH2')
 grid on
 ylim([-120, -40]);
-title('Street route total received power with distance')
-% saveas(gcf,'rxPdisSR','png')
-%% Extracting rxP data
+title('Street route ISO total rxP with distance')
+saveas(gcf,'rxPdisSR','png')
+%% Extracting rxP data isotropic
 load(strcat(str,'\bfModel\iso\r0\rxPowerMIMO.mat'))
 rxP1=rxP;
 load(strcat(str,'\bfEigModel\iso\r0\rxPowerMIMO.mat'))
@@ -173,7 +173,7 @@ rxP4=rxP;
 load(strcat(str,'\smh2Model\iso\r0\rxPowerMIMO.mat'))
 rxP5=rxP;
 %
-rxP=mean([rxP1 rxP2 rxP3 rxP4 rxP5], 2);
+rxP=mean([rxP2 rxP3 rxP4 rxP5], 2);
 data=[dis rxP];
 data=sortrows(data);
 wl=3;
@@ -199,13 +199,64 @@ while len~=length(data)
 end
 %
 figure
+hold on
 plot(data(:,1), data(:,2));
 xlabel('Distance [m]');ylabel('Total received power [dBm]');
 % legend('Location', 'best', 'Dir BF', 'DET', 'SM', 'SMH4', 'SMH2')
 grid on
 % ylim([-inf, inf]);
-title('Street route total received power with distance')
-saveas(gcf,'rxPdisSRiso','png')
+% title('Street route total received power with distance')
+% saveas(gcf,'rxPdisSRiso','png')
+%
+% Extracting rxP data PATCH
+load(strcat(str,'\bfModel\pat\r0\rxPowerMIMO.mat'))
+rxP1=rxP;
+load(strcat(str,'\bfEigModel\pat\r0\rxPowerMIMO.mat'))
+rxP2=rxP;
+load(strcat(str,'\smModel\pat\r0\rxPowerMIMO.mat'))
+rxP3=rxP;
+load(strcat(str,'\smh4Model\pat\r0\rxPowerMIMO.mat'))
+rxP4=rxP;
+load(strcat(str,'\smh2Model\pat\r0\rxPowerMIMO.mat'))
+rxP5=rxP;
+%
+rxP=mean([rxP2 rxP3 rxP4 rxP5], 2);
+data=[dis rxP];
+data=sortrows(data);
+%
+wl=3;
+len=0;
+th=3;
+%
+while len~=length(data)
+    len=length(data);
+    for x=1:len
+        if x<=wl
+            m_rxP=mean(data(x+1:x+2*wl+1, 2));
+        elseif x+wl<=length(data)
+            m_rxP=(mean(data(x-wl:x-1, 2))+mean(data(x+1:x+wl, 2)))/2;
+        elseif x <= length(data)
+            m_rxP=mean(data(x-2*wl-1:x-1, 2));
+        else
+            break;
+        end
+        if data(x, 2)< m_rxP-th
+            data(x, :)=[];
+        end        
+    end
+end
+%
+% figure
+plot(data(:,1), data(:,2), '-..');
+% xlabel('Distance [m]');ylabel('Total received power [dBm]');
+% legend('Location', 'best', 'Dir BF', 'DET', 'SM', 'SMH4', 'SMH2')
+% grid on
+% % ylim([-inf, inf]);
+title('Street route total received power')
+legend('Location', 'best','ISO', 'PATCH');
+saveas(gcf,'rxPdisSRPAT','png')
+
+
 %% Plot CDF of received power
 thd=-200;
 load(strcat(str,'\bfModel\iso\r0\rxPowerMIMO.mat'))
@@ -241,3 +292,73 @@ legend('Location', 'best', 'Dir BF', 'DET', 'SM', 'SMH4', 'SMH2')
 xlabel('Total received power [dBm]');ylabel('CDF');
 title('RxP Emiprical CDF');
 saveas(gcf,'rxPcdfISO','png')
+
+% Plot CDF of received power
+thd=-200;
+load(strcat(str,'\bfModel\pat\r0\rxPowerMIMO.mat'))
+rxP1=rxP(rxP>thd);
+load(strcat(str,'\bfEigModel\pat\r0\rxPowerMIMO.mat'))
+rxP2=rxP(rxP>thd);
+load(strcat(str,'\smModel\pat\r0\rxPowerMIMO.mat'))
+rxP3=rxP(rxP>thd);
+load(strcat(str,'\smh4Model\pat\r0\rxPowerMIMO.mat'))
+rxP4=rxP(rxP>thd);
+load(strcat(str,'\smh2Model\pat\r0\rxPowerMIMO.mat'))
+rxP5=rxP(rxP>thd);
+%
+figure
+hold on
+[f, x]=ecdf(rxP1);
+plot(x, f, '.-.');
+% plot(x(1:50:end), f(1:50:end), 'x');
+[f, x]=ecdf(rxP2);
+plot(x, f, '--');
+% plot(x(1:50:end), f(1:50:end), 'o');
+[f, x]=ecdf(rxP3);
+plot(x, f, '-.');
+% plot(x(1:50:end), f(1:50:end), '+');
+[f, x]=ecdf(rxP4);
+plot(x, f, ':');
+% plot(x(1:50:end), f(1:50:end), '^');
+[f, x]=ecdf(rxP5);
+plot(x, f);
+% plot(x(1:50:end), f(1:50:end), 'd');
+grid on
+legend('Location', 'best', 'Dir BF', 'DET', 'SM', 'SMH4', 'SMH2')
+xlabel('Total received power [dBm]');ylabel('CDF');
+title('RxP Emiprical CDF');
+saveas(gcf,'rxPcdfPAT','png')
+
+%% Plot rxP CDF comparison iso vs pat
+thd=-200;
+load(strcat(str,'\bfEigModel\iso\r0\rxPowerMIMO.mat'))
+rxP2=rxP(rxP>thd);
+load(strcat(str,'\smModel\iso\r0\rxPowerMIMO.mat'))
+rxP3=rxP(rxP>thd);
+load(strcat(str,'\smh4Model\iso\r0\rxPowerMIMO.mat'))
+rxP4=rxP(rxP>thd);
+load(strcat(str,'\smh2Model\iso\r0\rxPowerMIMO.mat'))
+rxP5=rxP(rxP>thd);
+
+rxP=mean([rxP2 rxP3 rxP4 rxP5], 2);
+figure
+hold on
+[f, x]=ecdf(rxP);
+plot(x, f)
+load(strcat(str,'\bfEigModel\pat\r0\rxPowerMIMO.mat'))
+rxP2=rxP(rxP>thd);
+load(strcat(str,'\smModel\pat\r0\rxPowerMIMO.mat'))
+rxP3=rxP(rxP>thd);
+load(strcat(str,'\smh4Model\pat\r0\rxPowerMIMO.mat'))
+rxP4=rxP(rxP>thd);
+load(strcat(str,'\smh2Model\pat\r0\rxPowerMIMO.mat'))
+rxP5=rxP(rxP>thd);
+rxP=mean([rxP2 rxP3 rxP4 rxP5], 2);
+[f, x]=ecdf(rxP);
+plot(x, f, '-.')
+grid on
+xlabel('Total received power [dBm]');ylabel('CDF');
+title('Received power distribution ISO VS PAT')
+legend('Location', 'best','ISO', 'PATCH');
+saveas(gcf,'rxPcdfISOpat','png')
+

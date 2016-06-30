@@ -1,17 +1,16 @@
 clear all;
-close all;
+% close all;
 load rayAm
 load dod
 load doa
 tic
 %
 rx_ind=[ 10 19 44 67 82 90 114 122];
-% rx_ind=82;
 Ptx=1.5;
 fc=15e9;
 bw=800e6;
 save_flag=false;
-rt_phi=0:6:360;
+rt_phi=0:2:360;
 dir=' ';
 %% Isotropic element
 parfor w=1:length(rt_phi)
@@ -60,7 +59,7 @@ theta_rx(theta_rx==0)=1;  % Rx side
 parfor w=1:length(rt_phi)
     % Rx rotation
     doat=doa;
-    phi=doat(:,1,:)-rt_phi(:, w)+90;
+    phi=doat(:,1,:)+rt_phi(:, w);
     phi(phi>180)=mod(phi(phi>180),-180);
     phi(phi<-180)=mod(phi(phi<-180),180);
     doat(:,1,:)=phi;

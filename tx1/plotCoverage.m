@@ -3,8 +3,8 @@ close all;
 load position
 
 str=pwd;
-op=1;
-ed=58;
+op=59;
+ed=82;
 
 figure
 load(strcat(str, '\bfModel\iso\r0\rxPowerMIMO.mat'));
@@ -22,6 +22,7 @@ hold on
 load(strcat(str, '\smh2Model\iso\r0\rxPowerMIMO.mat'));
 plot(dis(op:ed), rxP(op:ed), '<', 'MarkerSize', 5)
 grid on
+ylim([-150 inf])
 legend('Location', 'best', 'BF', 'DET', 'SM', 'Hybrid SM4', 'Hybrid SM2')
 xlabel('Distance [m]'); ylabel('Received power [dBm]');
 %%
